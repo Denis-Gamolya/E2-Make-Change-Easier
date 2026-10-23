@@ -18,6 +18,15 @@ let x = 2;
 let y = 2;
 let direction = 0;
 
+const pendingCommands: Command[] = [];
+
+const pendingList = document.querySelector<HTMLOListElement>("#rover-pending")!;
+const queueStatus = document.querySelector<HTMLParagraphElement>(
+  "#rover-queue-status",
+)!;
+const runButton = document.querySelector<HTMLButtonElement>("#rover-run")!;
+const clearButton = document.querySelector<HTMLButtonElement>("#rover-clear")!;
+
 const directions: Direction[] = [
   { name: "North", dx: 0, dy: -1 },
   { name: "East", dx: 1, dy: 0 },
@@ -49,6 +58,28 @@ function drawRover() {
   }`;
 }
 
+function updateQueueDisplay() {
+  pendingList.replaceChildren();
+
+  for (const command of pendingCommands) {
+    const item = document.createElement("li");
+    item.textContent = command.label;
+    pendingList.appendChild(item);
+  }
+
+  queueStatus.textContent = pendingCommands.length === 0
+    ? "Empty"
+    : `${pendingCommands.length} pending commands`;
+
+  runButton.disabled = pendingCommands.length === 0;
+  clearButton.disabled = pendingCommands.length === 0;
+}
+
+function enqueueCommand(command: Command) {
+  pendingCommands.push(command);
+  updateQueueDisplay();
+}
+
 function runCommand(command: Command) {
   command.execute();
   drawRover();
@@ -71,16 +102,33 @@ const rightCommand: Command = {
   },
 };
 
+runButton.onclick = () => {
+  while (pendingCommands.length > 0) {
+    const command = pendingCommands.shift()!;
+    runCommand(command);
+  }
+
+  updateQueueDisplay();
+};
+
+clearButton.onclick = () => {
+  pendingCommands.length = 0;
+  updateQueueDisplay();
+};
+
 document.querySelector<HTMLButtonElement>("#rover-forward")!.onclick = () => {
-  runCommand(forwardCommand);
+  enqueueCommand(forwardCommand);
 };
 document.querySelector<HTMLButtonElement>("#rover-right")!.onclick = () => {
-  runCommand(rightCommand);
+  enqueueCommand(rightCommand);
 };
 document.querySelector<HTMLButtonElement>("#rover-reset")!.onclick = () => {
   x = 2;
   y = 2;
   direction = 0;
+  pendingCommands.length = 0;
   drawRover();
+  updateQueueDisplay();
 };
 drawRover();
+updateQueueDisplay();
