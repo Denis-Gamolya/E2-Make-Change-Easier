@@ -6,6 +6,11 @@ type ShieldSnapshot = {
   missingCharge: number;
 };
 
+const shieldEvents = new EventTarget();
+shieldEvents.addEventListener("shield-change", (event) => {
+  drawMeter((event as CustomEvent<ShieldSnapshot>).detail);
+});
+
 const canvas = document.querySelector<HTMLCanvasElement>("#counter-canvas")!;
 const ctx = canvas.getContext("2d")!;
 const readout = document.querySelector<HTMLParagraphElement>(
@@ -56,7 +61,9 @@ function setCount(next: number) {
   if (bounded === count) return;
   count = bounded;
   const shield = getShieldSnapshot(count);
-  drawMeter(shield);
+  shieldEvents.dispatchEvent(
+    new CustomEvent<ShieldSnapshot>("shield-change", { detail: shield }),
+  );
   if (panel) updateStats(shield);
 }
 
