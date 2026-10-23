@@ -14,6 +14,12 @@ type ShiftResults = {
   balance: number;
 };
 
+type DisplayRecord = {
+  label: string;
+  value: number;
+  color: string;
+};
+
 function calculateShift(producers: number): ShiftResults {
   const productionValue = producers * 3;
   const consumptionValue = 6;
@@ -37,16 +43,31 @@ function updateDisplay() {
 }
 
 function drawProductionAndConsumption(results: ShiftResults) {
+  const rows: DisplayRecord[] = [
+    {
+      label: "Production",
+      value: results.productionValue,
+      color: "#27766b",
+    },
+    {
+      label: "Consumption",
+      value: results.consumptionValue,
+      color: "#a44d23",
+    },
+  ];
+
   ctx.fillStyle = "#233e43";
   ctx.font = "14px system-ui";
   ctx.fillText(`Producers: ${results.producers} / 6`, 18, 76);
-  ctx.fillText(`Production: ${results.productionValue}`, 18, 102);
-  ctx.fillStyle = "#27766b";
-  ctx.fillRect(18, 110, results.productionValue * 14, 20);
-  ctx.fillStyle = "#233e43";
-  ctx.fillText(`Consumption: ${results.consumptionValue}`, 18, 154);
-  ctx.fillStyle = "#a44d23";
-  ctx.fillRect(18, 162, results.consumptionValue * 14, 20);
+
+  rows.forEach((row, index) => {
+    const labelY = 102 + index * 52;
+
+    ctx.fillStyle = "#233e43";
+    ctx.fillText(`${row.label}: ${row.value}`, 18, labelY);
+    ctx.fillStyle = row.color;
+    ctx.fillRect(18, labelY + 8, row.value * 14, 20);
+  });
 }
 
 function drawProducers(results: ShiftResults) {
